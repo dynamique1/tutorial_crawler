@@ -6,13 +6,17 @@ from scrapy.spiders import CrawlSpider, Rule
 class TranscriptCrawlerSpider(CrawlSpider):
     name = "transcript_crawler"
     allowed_domains = ["subslikescript.com"]
-    start_urls = ["https://subslikescript.com/movies"]
-
-    rules = (Rule(LinkExtractor(allow=r"Items/"), callback="parse_item", follow=True),)
+    start_urls = ["https://subslikescript.com/movies_letter-X"]
+    rules=(
+        Rule(LinkExtractor(restrict_xpaths=("//ul[@class='scripts-list']/a")), callback="parse_item", follow=True),
+        Rule(LinkExtractor(restrict_xpaths=('(//a[@rel="next"])[1]'))),
+)
 
     def parse_item(self, response):
-        item = {}
-        #item["domain_id"] = response.xpath('//input[@id="sid"]/@value').get()
-        #item["name"] = response.xpath('//div[@id="name"]').get()
-        #item["description"] = response.xpath('//div[@id="description"]').get()
-        return item
+        article = response.xpath('//article[@class="main-article"]')
+        yield{
+            "Title":article.xpath('./h1/text()').get(),
+            "Plot": article.xpath('./p/text()').get(),
+            # "Transcript":article.xpath('./div/text()').getall(),
+            "Url":response.url,
+        }
