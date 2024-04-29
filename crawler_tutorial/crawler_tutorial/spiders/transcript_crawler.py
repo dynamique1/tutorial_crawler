@@ -1,7 +1,7 @@
 import scrapy
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import CrawlSpider, Rule
-
+# import pymongo
 
 class TranscriptCrawlerSpider(CrawlSpider):
     name = "transcript_crawler"
@@ -22,10 +22,12 @@ class TranscriptCrawlerSpider(CrawlSpider):
         
     def parse_item(self, response):
         article = response.xpath('//article[@class="main-article"]')
+        transcript_list = article.xpath('./div/text()').getall()
+        transcript_string = ' '.join(transcript_list)
         yield{
             "Title":article.xpath('./h1/text()').get(),
             "Plot": article.xpath('./p/text()').get(),
-            "Transcript":article.xpath('./div/text()').getall(),
+            "Transcript":transcript_string,
             "Url":response.url,
-            # "user-agent":response.request.headers['User-Agent']
-        }
+            # "user-agent":response.request.headers['User-Agent'],
+            }
